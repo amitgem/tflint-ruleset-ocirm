@@ -3,19 +3,16 @@ package main
 import (
 	"github.com/terraform-linters/tflint-plugin-sdk/plugin"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
-	"github.com/terraform-linters/tflint-ruleset-template/rules"
+	"github.com/terraform-linters/tflint-ruleset-ocirm/rules"
 )
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		RuleSet: &tflint.BuiltinRuleSet{
-			Name:    "template",
+			Name:    "ocirm",
 			Version: "0.1.0",
 			Rules: []tflint.Rule{
-				rules.NewAwsInstanceExampleTypeRule(),
-				rules.NewAwsS3BucketExampleLifecycleRuleRule(),
-				rules.NewLocalFileExampleProvisionerRule(),
-				rules.NewTerraformBackendTypeRule(),
+				rules.NewOciRequiredTagRule(),
 			},
 		},
 	})
