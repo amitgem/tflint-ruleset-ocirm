@@ -3,7 +3,7 @@ plugin "ocirm" {
 
   rule "oci_required_tags" {
     enabled = true
-    required_tags "resource" "oci_core_instance" {
+    required_tags "oci_core_instance" {
       tag {
         name = "Applications.CostCenter"
         values = ["AA", "BB" ]
@@ -13,12 +13,11 @@ plugin "ocirm" {
         values = ["XX", "YY"]
       }
     }
-    required_tags "resource" "oci_core_compartment" {
+    required_tags "oci_core_compartment" {
       tag {
         name = "Applications.CostCenter"
         values = ["CC", "DD" ]
       }
     }
   }
-
 }

@@ -6,7 +6,7 @@ import (
 	"github.com/terraform-linters/tflint-plugin-sdk/helper"
 )
 
-func Test_OciRequiredTagRule(t *testing.T) {
+func Test_OciRequiredTagsRule(t *testing.T) {
 	cases := []struct {
 		Name     string
 		Content  string
@@ -18,32 +18,28 @@ func Test_OciRequiredTagRule(t *testing.T) {
 			Content: `
 resource "oci_core_instance" "t1" {
   defined_tags = {
+    "HumanResource.Provider" = "1234"
     "Applications.CostCenter" = "1234"
   }
 }`,
 			Config: `
 rule "oci_required_tags" {
 	enabled = true
-	required_tags "resource" "oci_core_instance" {
+	required_tags "oci_core_instance" {
 		tag "Applications.CostCenter" {
 			values = ["AA", "BB" ]
 		}
 		tag "HumanResource.Provider" {
 			values = ["XX", "YY"]
-		}
-	}
-	required_tags "resource" "oci_core_compartment" {
-		tag "Applications.CostCenter"{
-			values = ["CC", "DD" ]
-		}
-	}
+	    }
+    }
 }
 `,
 			Expected: helper.Issues{},
 		},
 	}
 
-	rule := NewOciRequiredTagRule()
+	rule := NewOciRequiredTagsRule()
 
 	for _, tc := range cases {
 		runner := helper.TestRunner(t, map[string]string{"resource.tf": tc.Content, ".tflint.hcl": tc.Config})
