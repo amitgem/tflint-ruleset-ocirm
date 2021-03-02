@@ -2,22 +2,14 @@ plugin "ocirm" {
   enabled = true
 
   rule "oci_required_tags" {
-    enabled = true
+    enabled = false
     required_tags "oci_core_instance" {
-      tag {
-        name = "Applications.CostCenter"
+      tag "Applications.CostCenter" {
         values = ["AA", "BB" ]
       }
-      tag {
-        name = "HumanResource.Provider" 
+      tag "HumanResource.Provider" {
         values = ["XX", "YY"]
+        }
       }
-    }
-    required_tags "oci_core_compartment" {
-      tag {
-        name = "Applications.CostCenter"
-        values = ["CC", "DD" ]
-      }
-    }
   }
 }

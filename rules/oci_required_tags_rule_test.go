@@ -18,7 +18,7 @@ func Test_OciRequiredTagsRule(t *testing.T) {
 			Content: `
 resource "oci_core_instance" "t1" {
   defined_tags = {
-    "HumanResource.Provider" = "1234"
+    "HumanResource.Psrovider" = "1234"
     "Applications.CostCenter" = "1234"
   }
 }`,

@@ -1,6 +1,7 @@
 package rules
 
 import (
+	"encoding/gob"
 	"fmt"
 	"log"
 	"regexp"
@@ -34,14 +35,13 @@ var tagAttributeNames = []string{
 
 // NewOciRequiredTagsRule returns a new rule
 func NewOciRequiredTagsRule() *OciRequiredTagsRule {
-	//gob.Register(map[string]string{})
+	gob.Register(map[string]string{})
 	return &OciRequiredTagsRule{}
 }
 
 // Name returns the rule name
 func (r *OciRequiredTagsRule) Name() string {
-	log.Printf("[INFO] Plugin name retrived.")
-	return "oci_required_tagss"
+	return "oci_required_tags"
 }
 
 // Enabled returns whether the rule is enabled by default
@@ -60,18 +60,18 @@ func (r *OciRequiredTagsRule) Link() string {
 }
 
 // Check checks resources for missing tags
-func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
-
+/*func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
 	config := ociRequiredTagsRuleConfig{}
 	if err := runner.DecodeRuleConfig(r.Name(), &config); err != nil {
 		return err
 	}
 
+	if len(config.OciRequiredTags) == 0 {
+		return errors.New("Config cannot be empty")
+	}
 	for _, requiredTags := range config.OciRequiredTags {
 		for _, tag := range requiredTags.Tags {
-
 			err := runner.WalkResources(requiredTags.ResourceType, func(resource *configs.Resource) error {
-
 				for _, tagsAttributeName := range tagAttributeNames {
 					body, _, diags := resource.Config.PartialContent(&hcl.BodySchema{
 						Attributes: []hcl.AttributeSchema{
@@ -83,7 +83,6 @@ func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
 					if diags.HasErrors() {
 						return diags
 					}
-
 					if attribute, ok := body.Attributes[tagsAttributeName]; ok {
 						resourceTags := make(map[string]string)
 						err := runner.EvaluateExpr(attribute.Expr, &resourceTags, nil)
@@ -113,6 +112,61 @@ func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
 		}
 	}
 
+	return nil
+}*/
+
+// Check checks resources for missing tags
+func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
+	config := ociRequiredTagsRuleConfig{}
+	if err := runner.DecodeRuleConfig(r.Name(), &config); err != nil {
+		return err
+	}
+
+	resourceType := "oci_core_instance"
+
+	err := runner.WalkResources(resourceType, func(resource *configs.Resource) error {
+		body, _, diags := resource.Config.PartialContent(&hcl.BodySchema{
+			Attributes: []hcl.AttributeSchema{
+				{
+					Name: "defined_tags",
+				},
+			},
+		})
+		if diags.HasErrors() {
+			return diags
+		}
+
+		if attribute, ok := body.Attributes["defined_tags"]; ok {
+			resourceTags := make(map[string]string)
+			err := runner.EvaluateExpr(attribute.Expr, &resourceTags, nil)
+			err = runner.EnsureNoError(err, func() error {
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+			found := false
+			for key := range resourceTags {
+				if matched, _ := regexp.MatchString(".*\\.CostCenter$", key); matched {
+					found = true
+					break
+				}
+			}
+			if found {
+				return nil
+			}
+			r.emitResourceIssue(runner, resource.DeclRange)
+		} else {
+			log.Printf("[DEBUG] Walk `%s` Resource", resource.Type+"."+resource.Name)
+			r.emitResourceIssue(runner, resource.DeclRange)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
