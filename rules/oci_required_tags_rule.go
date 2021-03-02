@@ -122,7 +122,7 @@ func (r *OciRequiredTagsRule) Check(runner tflint.Runner) error {
 		return err
 	}
 
-	resourceType := "oci_core_instance"
+	resourceType := "oci_identity_compartment"
 
 	err := runner.WalkResources(resourceType, func(resource *configs.Resource) error {
 		body, _, diags := resource.Config.PartialContent(&hcl.BodySchema{
